@@ -12,6 +12,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/handlebars.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/waterfall.min.js' %}"></script>
 </head>
 <body>
 
@@ -22,12 +24,19 @@
 
     <div id="menu_icon"></div>
     <nav>
+
         <ul>
-            <li><a href="index.html" class="selected">Home</a></li>
-            <li><a href="#">About</a></li>
-            <li><a href="#">The Team</a></li>
-            <li><a href="#">Journal</a></li>
-            <li><a href="contact.html">Contact Us</a></li>
+            {#            <li><a href="index.html" class="selected">Home</a></li>#}
+            {#            <li><a href="#">About</a></li>#}
+            {#            <li><a href="#">The Team</a></li>#}
+            {#            <li><a href="#">Journal</a></li>#}
+            <li><a href="/flash_cache/">flash_cache</a></li>
+            <li><a href="/create_album/">create_album</a></li>
+
+
+            {% for i in photo_album %}
+                <li><a href="/album/{{ i }}/" class="selected">{{ i }}</a></li>
+            {% endfor %}
         </ul>
     </nav><!-- end navigation menu -->
 
@@ -48,12 +57,12 @@
     </div><!-- end footer -->
 </header><!-- end header -->
 
-<section class="main clearfix">
-
+<section id="section_img" class="main clearfix" page_index="{{ data.number }}"
+         page_count="{{ data.paginator.num_pages }}">
     {% for i in data %}
         <div class="work">
             <a href="inner.html">
-                <img src="/photo/{{ i }}" class="media" alt=""/>
+                <img src="/photo_preview/{{ album_name }}/{{ i }}" class="media" alt=""/>
                 <div class="caption">
                     <div class="work_title">
                         <h1>qui officia deserunt mollit</h1>
@@ -62,14 +71,6 @@
             </a>
         </div>
     {% endfor %}
-
-
-
-
-
-
-
-
     <div class="work">
         <a href="inner.html">
             <img src="{% static 'img/work1.jpg' %}" class="media" alt=""/>
@@ -81,95 +82,97 @@
         </a>
     </div>
 
-    <div class="work">
-        <a href="inner.html">
-            <img src="{% static 'img/work2.jpg' %}" class="media" alt=""/>
-            <div class="caption">
-                <div class="work_title">
-                    <h1>culpa qui officia deserunt mollit</h1>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <div class="work">
-        <a href="inner.html">
-            <img src="{% static 'img/work3.jpg' %}" class="media" alt=""/>
-            <div class="caption">
-                <div class="work_title">
-                    <h1>culpa qui officia deserunt mollit</h1>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <div class="work">
-        <a href="inner.html">
-            <img src="{% static 'img/work4.jpg' %}" class="media" alt=""/>
-            <div class="caption">
-                <div class="work_title">
-                    <h1>culpa qui officia deserunt mollit</h1>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <div class="work">
-        <a href="inner.html">
-            <img src="{% static 'img/work5.jpg' %}" class="media" alt=""/>
-            <div class="caption">
-                <div class="work_title">
-                    <h1>culpa qui officia deserunt mollit</h1>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="tlinks">Collect from <a href="http://www.cssmoban.com/" title="网站模板">网站模板</a></div>
-
-    <div class="work">
-        <a href="inner.html">
-            <img src="{% static 'img/work6.jpg' %}" class="media" alt=""/>
-            <div class="caption">
-                <div class="work_title">
-                    <h1>culpa qui officia deserunt mollit</h1>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <div class="work">
-        <a href="inner.html">
-            <img src="{% static 'img/work2.jpg' %}" class="media" alt=""/>
-            <div class="caption">
-                <div class="work_title">
-                    <h1>culpa qui officia deserunt mollit</h1>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <div class="work">
-        <a href="inner.html">
-            <img src="{% static 'img/work3.jpg' %}" class="media" alt=""/>
-            <div class="caption">
-                <div class="work_title">
-                    <h1>culpa qui officia deserunt mollit</h1>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <div class="work">
-        <a href="inner.html">
-            <img src="{% static 'img/work1.jpg' %}" class="media" alt=""/>
-            <div class="caption">
-                <div class="work_title">
-                    <h1>culpa qui officia deserunt mollit</h1>
-                </div>
-            </div>
-        </a>
-    </div>
 </section><!-- end main -->
+<script>
+    // 下面两个方法主要处理django中的csrftoken验证问题
+    // 将csrftoken写入当前请求头
+    function _ajaxSetup() {
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+//              console.log(getCookie('csrftoken'));
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                }
+            }
+        });
+    }
 
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    var isbool = true;//触发开关，防止多次调用事件
+
+    $(function () {
+        //添加item的函数
+        function getItems() {
+            var page = $('#section_img').attr("page_index"); //得到当前页码
+            isbool = false;
+            _ajaxSetup();
+            $.ajax({
+                type: "POST",
+                url: "http://127.0.0.1:8000/album/{{album_name}}/" + (parseInt(page) + 1) + "/",
+                async: true,
+                success: function (data) {
+                    console.log(data);
+                    var str = '';
+                    for (var i = 0; i < data.data.length; i++) {
+                        str +=
+                            '<div class="work">' +
+                            '<a href="inner.html">' +
+                            '<img src="/photo_preview/' + data.album_name + '/' + data.data[i] + '" class="media" alt=""/>' +
+                            '<div class="caption">' +
+                            '<div class="work_title">' +
+                            '<h1>qui officia deserunt mollit</h1>' +
+                            '</div>' +
+                            '</div>' +
+                            '</a>' +
+                            '</div>'
+                    }
+                    $('#section_img').append(str);
+                    $('#section_img').attr("page_index", data.this_page);
+                    {#$('#section_img').prop("page_index", data.this_page)#}
+                    isbool = true;
+                }
+            });
+
+        }
+
+        //判断文档滚动的位置
+        function wheelListen() {
+            var srollHeight = $(document).scrollTop();
+            console.log(isbool)
+            console.log("srollHeight", $(document).scrollTop(), "document_heigt", $(document).height(), "window_height", $(window).height())
+            if (srollHeight + $(window).height() >= $(document).height() - 800 && isbool == true) {
+                console.log("getItems")
+                if ($('#section_img').attr("page_index") < $('#section_img').attr("page_count")) {
+                    getItems();
+                } else {
+                    $('#section_img').append("没有了");
+                }
+
+            }
+        }
+
+        //绑定事件
+        $(window).on("load", function () {
+            $(document).bind("mousewheel DOMMouseScroll", function () {
+                wheelListen();
+            });
+        })
+    });
+</script>
 </body>
 </html>

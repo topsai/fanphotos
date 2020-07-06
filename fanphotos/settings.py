@@ -121,7 +121,7 @@ CKEDITOR_UPLOAD_PATH = 'upload/'
 # 相片url
 PHOTO_URL = "/photo/"
 # 相册位置
-PHOTO_ROOT = "H:\photo"
+PHOTO_ROOT = "D:/photo"
 # 缓存名称
-CACHE_FILE_NAME = "缓存"
+CACHE_FILE_NAME = ".cache"
 DEFAULT_CHARSET = "UTF-8"

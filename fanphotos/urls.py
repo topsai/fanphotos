@@ -19,11 +19,18 @@ from back import views
 from django.views.static import serve
 from django.conf import settings
 from django.conf.urls import url
-
+import os
+from back.mystatic import serve as myserve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
     # media相关的路由配置
     url(r'^photo/(?P<path>.*)$', serve, {"document_root": settings.PHOTO_ROOT}),
+    path('photo_preview/<str:album>/<str:path>', myserve,
+         {"document_root": os.path.join(settings.PHOTO_ROOT, settings.CACHE_FILE_NAME)}),
+    path('album/<album_name>/', views.album, ),
+    path('album/<album_name>/<page>/', views.album, ),
+    path('flash_cache/', views.flash_cache, ),
+    path('create_album/', views.CreatePhotoAlbum, ),
 ]
