@@ -125,3 +125,4 @@ PHOTO_ROOT = "D:/photo"
 # 缓存名称
 CACHE_FILE_NAME = ".cache"
 DEFAULT_CHARSET = "UTF-8"
+CACHE_IMG_SIZE = (600, 600)

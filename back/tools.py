@@ -5,6 +5,7 @@ from PIL import Image
 #  glob 文件名模式匹配，不用遍历整个目录判断每个文件是不是符合。
 import glob
 from back import modelform
+import math
 
 
 # im = Image.open('C:/Users/Administrator/Desktop/test.png')
@@ -47,16 +48,7 @@ def import_photo_album(photo_album_name):
 
 # photo_album 相册名, raw_img_name相片名称
 def create_image_cache(photo_album, raw_img_name):
-    im = Image.open(os.path.join(settings.PHOTO_ROOT, photo_album, raw_img_name))
-    # 相册缓存路径
-    photo_album_path = os.path.join(settings.PHOTO_ROOT, settings.CACHE_FILE_NAME, photo_album)
-    # 目录不存在，先创建
-    if not os.path.isdir(photo_album_path):
-        os.makedirs(photo_album_path)
-    # 图片压缩
-    im.thumbnail((200, 100))
-    image_name, image_suffix = os.path.splitext(raw_img_name)
-    im.save(os.path.join(photo_album_path, image_name + ".png"), "PNG")
+    thumb_photo(photo_album, raw_img_name)
 
 
 def list_dir(dir, filter=None):
@@ -78,6 +70,9 @@ def list_dir(dir, filter=None):
 
 def cut_photo(photo_album, raw_img_name, size_width):
     photo_album_path = os.path.join(settings.PHOTO_ROOT, settings.CACHE_FILE_NAME, photo_album)
+    # 目录不存在，先创建
+    if not os.path.isdir(photo_album_path):
+        os.makedirs(photo_album_path)
     image_name, image_suffix = os.path.splitext(raw_img_name)
     __img = Image.open(os.path.join(settings.PHOTO_ROOT, photo_album, raw_img_name))
     # __img = Image.open(file_path)
@@ -90,38 +85,45 @@ def cut_photo(photo_album, raw_img_name, size_width):
 
 
 def thumb_photo(photo_album, raw_img_name):
+    # 计算缩放比例，先缩放原图，能框住box， 然后从中间剪裁出缩略图
+    # 并且尽可能的裁剪出图片的中间部分,一般人摄影都会把主题放在靠中间
     photo_album_path = os.path.join(settings.PHOTO_ROOT, settings.CACHE_FILE_NAME, photo_album)
+    # 目录不存在，先创建
+    if not os.path.isdir(photo_album_path):
+        os.makedirs(photo_album_path)
     image_name, image_suffix = os.path.splitext(raw_img_name)
     __img = Image.open(os.path.join(settings.PHOTO_ROOT, photo_album, raw_img_name))
-    box = clipimage(__img.size)
-    size = (100, 100)
-    region = __img.crop(box, size)
-
-    region.thumbnail(size, Image.ANTIALIAS)
-    region.save(os.path.join(photo_album_path, image_name + ".png"), "JPEG")
-
-
-# 取宽和高的值小的那一个来生成裁剪图片用的box
-# 并且尽可能的裁剪出图片的中间部分,一般人摄影都会把主题放在靠中间的,个别艺术家有特殊的艺术需求我顾不上
-def clipimage(img_size, box_size):
+    # 先缩放，能框住box， 然后从中间剪裁出缩略图
     # 1920*1080   800*600
-    width = int(img_size[0])
-    height = int(img_size[1])
-    box_width = int(box_size[0])
-    box_height = int(box_size[1])
+    _width = int(__img.size[0])
+    _height = int(__img.size[1])
+    box_width = int(settings.CACHE_IMG_SIZE[0])
+    box_height = int(settings.CACHE_IMG_SIZE[1])
+    # 裁切的框
     box = ()
-    if (width > height):
-        dx = width - height
-        # box = (dx / 2, 0, height + dx / 2, height)
-        top = (width - box_width) / 2
-        right = (height - box_height) / 2
-        buttom = top + box_width
-        left = None
-        box = (top, right, buttom, left)
+    # 缩放后大小
+    scaling_size = None
+    # 计算缩放比例
+    scaling_ratio = box_width / _width
+    if scaling_ratio * _height >= box_height:
+        # math.ceil 向上取整数
+        scaling_size = (math.ceil(_width * scaling_ratio), math.ceil(_height * scaling_ratio))
     else:
-        dx = height - width
-        box = (0, dx / 2, width, width + dx / 2)
-    return box
+        scaling_ratio = box_height / _height
+        scaling_size = (math.ceil(_width * scaling_ratio), math.ceil(_height * scaling_ratio))
+    # 图像等比例缩放
+    __img.thumbnail(scaling_size)
+    width = int(__img.size[0])
+    height = int(__img.size[1])
+    top = width / 2 - box_width / 2
+    right = height / 2 - box_height / 2
+    buttom = width / 2 + box_width / 2
+    left = height / 2 + box_height / 2
+    box = (top, right, buttom, left)
+    print(box)
+    region = __img.crop(box)
+    region.thumbnail(settings.CACHE_IMG_SIZE, Image.ANTIALIAS)
+    region.save(os.path.join(photo_album_path, image_name + ".png"), "JPEG")
 
 
 # photo_album 相册名, raw_img_name相片名称
@@ -202,8 +204,6 @@ def create_raw_image_cache(photo_album, raw_img_name):
     # image_name, image_suffix = os.path.splitext(raw_img_name)
     # # im.save('C:/Users/Administrator/Desktop/thumbnail.png', 'PNG')
     # im.save(os.path.join(photo_album_path, image_name + ".png"), "PNG")
-
-
 
 
 if __name__ == "__main__":
