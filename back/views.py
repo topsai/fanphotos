@@ -1,11 +1,11 @@
-import os
 from django.shortcuts import render, HttpResponse, redirect
 from django.http import JsonResponse
 from django.core.paginator import Paginator, PageNotAnInteger, InvalidPage
-
-# Create your views here.
 from .tools import *
 from django.views.static import serve
+
+
+# Create your views here.
 
 
 def index(request):
@@ -13,26 +13,31 @@ def index(request):
     print("root_list:", root_list)
     _photo_album = get_all_photo_album_name()
     data = os.listdir(settings.PHOTO_ROOT)
-    project_init()
-    # path = settings.PHOTO_URL
-    # create_raw_image_cache("aaaa", "_DSC0012.ARW")
-    # cut_photo("aaaa", "1.jpg", 100)
-    # thumb_photo("aaaa", "1.jpg")
-    # 创建相册
-
     return render(request, "index.html", {'data': data, "photo_album": _photo_album})
 
 
+# 创建缩略图核心功能
 def flash_cache(request):
     album_list = get_all_photo_album_name()
     for album_name in album_list:
+        # 普通照片
         Folderpath = os.path.join(settings.PHOTO_ROOT, album_name) + "/*[jpg,png]"
-        # 删选出jpg和png格式的图片
+        # 删选出jpg和png格式的图片的地址列表
         pictures_path = glob.glob(Folderpath)
-        print("pictures_path", pictures_path)
-        for i in pictures_path:
-            print("create_image_cache", album_name, os.path.basename(i))
-            create_image_cache(album_name, os.path.basename(i))
+        if pictures_path:
+            print("pictures_path", pictures_path)
+            for i in pictures_path:
+                print("create_image_cache", album_name, os.path.basename(i))
+                create_image_cache(album_name, os.path.basename(i))
+        # RAW照片
+        _RawPath = os.path.join(settings.PHOTO_ROOT, album_name) + "/*[RAW]"
+        _raw_pictures_path = glob.glob(_RawPath)
+
+        if _raw_pictures_path:
+            print("_raw_pictures_path", _raw_pictures_path)
+            for i in _raw_pictures_path:
+                print("create_raw_image_cache", album_name, os.path.basename(i))
+                create_raw_image_cache(album_name, os.path.basename(i))
     return HttpResponse("ok")
 
 
