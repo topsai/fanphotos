@@ -15,10 +15,15 @@ def index(request):
     data = os.listdir(settings.PHOTO_ROOT)
     return render(request, "index.html", {'data': data, "photo_album": _photo_album})
 
-
-# 创建缩略图核心功能
+from back import models
 def flash_cache(request):
+    """
+    :param request:
+    :return:
+    创建缩略图核心功能
+    """
     album_list = get_all_photo_album_name()
+    model_album_list = models.PhotoAlbum.objects.all()
     for album_name in album_list:
         # 普通照片
         Folderpath = os.path.join(settings.PHOTO_ROOT, album_name) + "/*[jpg,png]"
@@ -32,7 +37,6 @@ def flash_cache(request):
         # RAW照片
         _RawPath = os.path.join(settings.PHOTO_ROOT, album_name) + "/*[RAW]"
         _raw_pictures_path = glob.glob(_RawPath)
-
         if _raw_pictures_path:
             print("_raw_pictures_path", _raw_pictures_path)
             for i in _raw_pictures_path:
