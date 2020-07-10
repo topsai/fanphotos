@@ -19,7 +19,6 @@ def get_all_photo_album_name():
     data = os.listdir(settings.PHOTO_ROOT)
     # 排除缓存文件
     a = set(data).difference([settings.CACHE_FILE_NAME])
-    print(a)
     return a
 
 

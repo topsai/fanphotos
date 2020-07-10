@@ -15,7 +15,10 @@ def index(request):
     data = os.listdir(settings.PHOTO_ROOT)
     return render(request, "index.html", {'data': data, "photo_album": _photo_album})
 
+
 from back import models
+
+
 def flash_cache(request):
     """
     :param request:
@@ -24,6 +27,28 @@ def flash_cache(request):
     """
     album_list = get_all_photo_album_name()
     model_album_list = models.PhotoAlbum.objects.all()
+    # 检索数据库中相册
+    for _ in model_album_list:
+        print(_.photo_album_name)
+        if _.photo_album_name in album_list:
+            print("本地相册，数据库有")
+        else:
+            print("数据库相册，本地没有,进行删除动作")
+            # TODO 删除数据
+
+    _model_album_list = models.PhotoAlbum.objects.values_list("photo_album_name")
+    if _model_album_list:
+        list_2 = [i for k in _model_album_list for i in k]
+        a = set(list_2).intersection(album_list)
+        print("交际", a)
+        print("model_album_list", list_2)
+    else:
+        print("没有交集")
+    #
+    # a = set(list_2).difference([album_list])
+
+    print("album_list", album_list)
+
     for album_name in album_list:
         # 普通照片
         Folderpath = os.path.join(settings.PHOTO_ROOT, album_name) + "/*[jpg,png]"
