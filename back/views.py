@@ -34,17 +34,25 @@ def flash_cache(request):
             print("本地相册，数据库有")
         else:
             print("数据库相册，本地没有,进行删除动作")
-            # TODO 删除数据
+            _.delete()
 
     _model_album_list = models.PhotoAlbum.objects.values_list("photo_album_name")
     if _model_album_list:
         list_2 = [i for k in _model_album_list for i in k]
         a = set(list_2).intersection(album_list)
         print("交际", a)
+        # 本地文件夹名，需要创建数据库
+        _diff = album_list.difference(a)
+        print("_diff", _diff)
+        if _diff:
+            product_list_to_insert = list()
+            for __ in _diff:
+                product_list_to_insert.append(models.PhotoAlbum(photo_album_name=__))
+            models.PhotoAlbum.objects.bulk_create(product_list_to_insert)
         print("model_album_list", list_2)
     else:
         print("没有交集")
-    #
+    # 以上是创建相册数据库
     # a = set(list_2).difference([album_list])
 
     print("album_list", album_list)
