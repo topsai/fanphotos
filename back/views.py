@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.http import JsonResponse
 from django.core.paginator import Paginator, PageNotAnInteger, InvalidPage
 from .tools import *
+from back.models import PhotoAlbum
 from django.views.static import serve
 
 
@@ -9,11 +10,12 @@ from django.views.static import serve
 
 
 def index(request):
-    root_list = glob.glob(settings.PHOTO_ROOT + '/*')
-    print("root_list:", root_list)
-    _photo_album = get_all_photo_album_name()
-    data = os.listdir(settings.PHOTO_ROOT)
-    return render(request, "index.html", {'data': data, "photo_album": _photo_album})
+    # root_list = glob.glob(settings.PHOTO_ROOT + '/*')
+    # print("root_list:", root_list)
+    # _photo_album = get_all_photo_album_name()
+    # data = os.listdir(settings.PHOTO_ROOT)
+    data = PhotoAlbum.objects.all()
+    return render(request, "index.html", {'data': data,})
 
 
 from back import models

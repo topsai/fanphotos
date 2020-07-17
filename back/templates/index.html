@@ -14,12 +14,14 @@
     <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/handlebars.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/waterfall.min.js' %}"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
 
 <header>
     <div class="logo">
-        <a href="index.html"><img src="{% static 'img/logo.png' %}" title="Magnetic" alt="Magnetic"/></a>
+        <a href="/"><img src="{% static 'img/logo.png' %}" title="Fan" alt="Magnetic"/></a>
     </div><!-- end logo -->
 
     <div id="menu_icon"></div>
@@ -34,8 +36,16 @@
             <li><a href="/create_album/">create_album</a></li>
 
 
-            {% for i in photo_album %}
-                <li><a href="/album/{{ i }}/" class="selected">{{ i }}</a></li>
+            {% for i in data %}
+                <li>
+                    <a href="/album/{{ i.photo_album_name }}/" class="selected">
+                        {% if i.photo_album_alias_name %}
+                            {{ i.photo_album_alias_name }}
+                        {% else %}
+                            {{ i.photo_album_name }}
+                        {% endif %}
+                    </a>
+                </li>
             {% endfor %}
         </ul>
     </nav><!-- end navigation menu -->
@@ -61,14 +71,15 @@
          page_count="{{ data.paginator.num_pages }}">
     {% for i in data %}
         <div class="work">
-            <a href="inner.html">
-                <img src="/photo_preview/{{ album_name }}/{{ i }}" class="media" alt=""/>
-                <div class="caption">
-                    <div class="work_title">
-                        <h1>qui officia deserunt mollit</h1>
-                    </div>
+
+            {#            <a href="inner.html">#}
+            <img src="/photo_preview/{{ album_name }}/{{ i }}" class="media" alt=""/>
+            <div class="caption">
+                <div class="work_title">
+                    <h1>qui officia deserunt mollit</h1>
                 </div>
-            </a>
+            </div>
+            {#            </a>#}
         </div>
     {% endfor %}
     <div class="work">
